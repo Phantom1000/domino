@@ -1,13 +1,11 @@
 package com.phantom;
-
-import java.util.Random;
 import java.util.Set;
 
 public class Player {
 
     private Set<Bone> bones;
-    private boolean played = false;
     private String name;
+    private final BoneService boneService;
 
     public Set<Bone> getBones() {
         return bones;
@@ -17,41 +15,48 @@ public class Player {
         this.bones = bones;
     }
 
-    public void go() {
+    public void go(Game game) {
         if (bones.isEmpty()) {
-            Game.over = true;
+            game.over = true;
+            return;
         }
+
+        boolean b = false;
+
         for (Bone bone : bones) {
-            if (bone.attach(Game.getStart())) {
-                played = true;
-                Game.setStart(bone);
+            if (boneService.attach(bone, game.getStart())) {
+                game.setStart(bone);
                 bones.remove(bone);
+                b = true;
                 break;
             }
-            if (bone.attach(Game.getEnd())) {
-                played = true;
-                Game.setEnd(bone);
+            if (boneService.attach(bone, game.getEnd())) {
+                game.setEnd(bone);
                 bones.remove(bone);
+                b = true;
                 break;
             }
         }
 
-        while (!played) {
-            Bone rand = Game.getRandomBone();
-            System.out.println(name + " get random bone - " + rand);
-            if (rand.attach(Game.getStart())) {
-                played = true;
-                Game.setStart(rand);
-                break;
+        while (!b) {
+            Bone rand = game.getRandomBone();
+            if (rand != null) {
+                System.out.println(name + " get random bone - " + rand);
+                if (boneService.attach(rand, game.getStart())) {
+                    b = true;
+                    game.setStart(rand);
+                    break;
+                }
+                if (boneService.attach(rand, game.getEnd())) {
+                    b = true;
+                    game.setEnd(rand);
+                    break;
+                }
+                if (!b) {
+                    bones.add(rand);
+                }
             }
-            if (rand.attach(Game.getEnd())) {
-                played = true;
-                Game.setEnd(rand);
-                break;
-            }
-            if (!played) {
-                bones.add(rand);
-            }
+
         }
 
     }
@@ -60,14 +65,6 @@ public class Player {
         System.out.println(name);
         bones.stream().forEach(bone -> System.out.println(bone));
         System.out.println("----");
-    }
-
-    public boolean isPlayed() {
-        return played;
-    }
-
-    public void setPlayed(boolean played) {
-        this.played = played;
     }
 
     public String getName() {
@@ -81,6 +78,7 @@ public class Player {
     public Player(Set<Bone> bones, String name) {
         this.bones = bones;
         this.name = name;
+        boneService = BoneService.getInstance();
     }
 
 }

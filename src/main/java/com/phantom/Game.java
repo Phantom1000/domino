@@ -2,33 +2,34 @@ package com.phantom;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Game {
 
-    private static List<Bone> reserve;
-    private List<Player> players = new ArrayList<>();
-    private static Bone start;
-    private static Bone end;
+    private List<Bone> reserve;
+    private Set<Player> goPlayers;
+    private Bone start;
+    private Bone end;
     private final int COUNT_PLAYERS = 2;
     private static Random rnd = new Random();
-    public static boolean over = false;
+    public boolean over = false;
+    private final BoneService boneService;
 
     public Game() {
+        boneService = BoneService.getInstance();
+        goPlayers = new HashSet<>();
+
         fillReserve();
 
         String[] names = { "Tom", "Bob" };
         for (int i = 0; i < COUNT_PLAYERS; i++) {
-            players.add(createPlayer(names[i]));
+            goPlayers.add(createPlayer(names[i]));
         }
 
         Set<Bone> duplicates = new HashSet<>();
-        players.stream().forEach(p -> {
+        goPlayers.stream().forEach(p -> {
             p.info();
             Bone dup = dublicate(p.getBones());
             if (dup != null) {
@@ -38,67 +39,47 @@ public class Game {
 
         Bone max = null;
         if (!duplicates.isEmpty())
-            max = duplicates.stream().max(Bone::compare).get();
+            max = duplicates.stream().max(new BoneComparator()).get();
         if (max != null) {
-            max.getOwner().setPlayed(true);
             max.getOwner().getBones().remove(max);
             start = max;
             end = max;
         } else {
             Set<Bone> maxs = new HashSet<>();
-            for (Player p : players) {
-                maxs.add(p.getBones().stream().max(Bone::compare).get());
+            for (Player p : goPlayers) {
+                maxs.add(p.getBones().stream().max(new BoneComparator()).get());
             }
-            max = maxs.stream().max(Bone::compare).get();
+            max = maxs.stream().max(new BoneComparator()).get();
             max.getOwner().getBones().remove(max);
             start = max;
             end = max;
         }
 
-        for (Player p : players) {
-            p.info();
-        }
 
         display(start, null);
         while (!over) {
-            for (Player p : players) {
-                if (!p.isPlayed()) {
-                    System.out.println("Ходит " + p.getName());
-                    p.go();
-                    display(start, null);
-                }
-                    
-            }
-            for (Player p : players) {
-                p.setPlayed(false);
+            for (Player p : goPlayers) {
+                System.out.println("Ходит " + p.getName());
+                p.go(this);
+                display(start, null);                
             }
         }
-        Bone st = start;
-        display(start, null);
-        /*display();
-        for (int i = 0; i < 3; i++) {
-            for (Player p : players) {
-                 try { Thread.currentThread(); Thread.sleep(500L); } catch
-                 (InterruptedException e) { e.printStackTrace(); }
 
-                System.out.println("Ходит " + p.getName());
-                p.go();
-                display();
-            }
-        }*/
+        System.out.println("Game over");
+        for (Player p : goPlayers) {
+            p.info();
+        }
 
     }
 
     private void display(Bone b, Bone except) {
         if (b != null) {
-            Bone first = b.getFirstHalf().getLink();
-            Bone second = b.getSecondHalf().getLink();
             System.out.print(b + "  ");
-            if (first != except) {
-                display(first, b);
-            }
-            if (second != except) {
-                display(second, b);
+            for (Half h : b.getHalfs()) {
+                Bone link = h.getLink();
+                if (link != except) {
+                    display(link, b);
+                }
             }
         }
     }
@@ -107,12 +88,15 @@ public class Game {
         reserve = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             for (int j = i; j < 7; j++) {
-                reserve.add(new Bone(new Half(i), new Half(j)));
+                List<Half> halfs = new ArrayList<>();
+                halfs.add(new Half(i));
+                halfs.add(new Half(j));
+                reserve.add(new Bone(halfs));
             }
         }
     }
 
-    public static Bone getRandomBone() {
+    public Bone getRandomBone() {
         if (reserve.size() > 0) {
             int rand = rnd.nextInt(reserve.size());
             Bone res = reserve.get(rand);
@@ -142,47 +126,45 @@ public class Game {
         Set<Bone> res = new HashSet<>();
         for (Bone bone : bones) {
             for (int i = 6; i > 0; i--) {
-                if (bone.getFirstHalf().getNumber() == i && bone.getSecondHalf().getNumber() == i) {
+                if (boneService.isDuplicate(bone, i)) {
                     res.add(bone);
                 }
             }
         }
 
-        return res.stream().max(Bone::compare).orElse(null);
+        return res.stream().max(new BoneComparator()).orElse(null);
     }
 
-    public static Bone getStart() {
+    public Bone getStart() {
         return start;
     }
 
-    public static void setStart(Bone start) {
-        Game.start = start;
+    public void setStart(Bone start) {
+        this.start = start;
     }
 
-    public static List<Bone> getReserve() {
+    public List<Bone> getReserve() {
         return reserve;
     }
 
-    public static void setReserve(List<Bone> reserve) {
-        Game.reserve = reserve;
+    public void setReserve(List<Bone> reserve) {
+        this.reserve = reserve;
     }
 
-    public List<Player> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(List<Player> players) {
-        this.players = players;
-    }
-
-    public static Bone getEnd() {
+    public Bone getEnd() {
         return end;
     }
 
-    public static void setEnd(Bone end) {
-        Game.end = end;
+    public void setEnd(Bone end) {
+        this.end = end;
     }
 
-    
+    public Set<Player> getGoPlayers() {
+        return goPlayers;
+    }
+
+    public void setGoPlayers(Set<Player> goPlayers) {
+        this.goPlayers = goPlayers;
+    }
 
 }
