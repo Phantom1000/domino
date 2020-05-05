@@ -1,4 +1,4 @@
-package com.phantom;
+package com.phantom.entities;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class Bone {
     public String toString() {
         StringBuffer res = new StringBuffer("[");
         for (Half h : halfs) {
-            res.append(h.getNumber() + "|");
+            res.append(h.getPoints() + "|");
         }
         res.append("]");
         return res.toString();

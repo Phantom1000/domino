@@ -1,4 +1,7 @@
-package com.phantom;
+package com.phantom.services;
+
+import com.phantom.entities.Bone;
+import com.phantom.entities.Half;
 
 public class BoneService {
     private static BoneService instance;
@@ -15,7 +18,7 @@ public class BoneService {
         for (Half half : to.getHalfs()) {
             if (half.getLink() == null) {
                 for (Half halfb : by.getHalfs()) {
-                    if (halfb.getLink() == null && halfb.getNumber() == half.getNumber()) {
+                    if (halfb.getLink() == null && halfb.getPoints() == half.getPoints()) {
                         halfb.setLink(to);
                         half.setLink(by);
                         return true;
@@ -29,7 +32,7 @@ public class BoneService {
 
     public boolean isDuplicate(Bone b, int i) {
         for (Half h : b.getHalfs()) {
-            if (h.getNumber() != i) {
+            if (h.getPoints() != i) {
                 return false;
             }
         }
