@@ -2,18 +2,17 @@ package com.phantom.entities;
 
 import com.phantom.services.GameService;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+//@JSONAutoDetect
 public class Game {
 
     private List<Bone> reserve = new ArrayList<>();
-    private Set<Player> players = new HashSet<>();
+    //private Set<Player> players = new HashSet<>();
+    private HashMap<Player, Set<Bone>> players = new HashMap<>();
     private Bone start;
     private Bone end;
-    private final int COUNT_PLAYERS = 2;
+    public final int COUNT_PLAYERS = 2;
     public boolean over = false;
     private final GameService gameService;
 
@@ -46,16 +45,12 @@ public class Game {
         this.end = end;
     }
 
-    public Set<Player> getPlayers() {
+    public HashMap<Player, Set<Bone>> getPlayers() {
         return players;
     }
 
-    public void setPlayers(Set<Player> players) {
+    public void setPlayers(HashMap<Player, Set<Bone>> players) {
         this.players = players;
-    }
-
-    public int getCOUNT_PLAYERS() {
-        return COUNT_PLAYERS;
     }
 
     public boolean isOver() {

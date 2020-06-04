@@ -1,5 +1,6 @@
 package com.phantom.entities;
 
+//@JSONAutoDetect
 public class Half {
     private Points points;
     private Bone link;
@@ -23,6 +24,9 @@ public class Half {
     public Half(Points points, Bone link) {
         this.points = points;
         this.link = link;
+    }
+
+    public Half() {
     }
 
     public Half(int points) {
