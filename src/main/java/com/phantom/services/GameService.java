@@ -1,5 +1,6 @@
 package com.phantom.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phantom.entities.Bone;
 import com.phantom.entities.Game;
 import com.phantom.entities.Half;
@@ -23,9 +24,14 @@ public class GameService {
     }
 
     public String playerInfo(Player p, Game game) {
-        /*ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(new File("target/domino.json"), game.getPlayers().get(p));*/
-        return p.getColor() + p.getName() + ": " + game.getPlayers().get(p).stream().map(x -> x.toString()).collect(Collectors.joining(", ")) + ANSI_RESET;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(new File("target/domino.json"), game.getPlayers().get(p));
+            return p.getColor() + p.getName() + ": " + game.getPlayers().get(p).stream().map(x -> x.toString()).collect(Collectors.joining(", ")) + ANSI_RESET;
+        } catch (IOException exception) {
+            return "";
+        }
+
     }
 
     private Player getOwner(Bone b, Game game) {

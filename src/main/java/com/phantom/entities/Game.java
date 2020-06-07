@@ -2,6 +2,7 @@ package com.phantom.entities;
 
 import com.phantom.services.GameService;
 
+import java.io.IOException;
 import java.util.*;
 
 //@JSONAutoDetect
@@ -16,7 +17,7 @@ public class Game {
     public boolean over = false;
     private final GameService gameService;
 
-    public Game() {
+    public Game() throws IOException {
         gameService = GameService.getInstance();
         gameService.start(this);
     }
